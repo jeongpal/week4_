@@ -26,10 +26,10 @@ router.post("/", async (req, res) => {
 // 게시글 조회
 router.get("/", async (req, res) => {  
     try { 
-    const schema = await (await Post.find().sort()).reverse();
+    const post = await  Post.find().sort("-createdAt");
     
     res.json({
-        schema,
+        post,
     });
     }
     catch(error){

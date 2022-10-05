@@ -47,7 +47,7 @@ router.put("/:_commentId", async (req, res) => {
     const { _commentId } = req.params; // 위의 주소와 일치시키는게 좋음.
     const { password, content } = req.body;   
     
-    const existArticle = await Comment.findOne({ _id: _commentId, password }); // 수정은 글 하나를 골라서 하는거니까 findOne()
+    // const existArticle = await Comment.findOne({ _id: _commentId, password }); // 수정은 글 하나를 골라서 하는거니까 findOne() 로직 지헌님꺼 참고
 
     if (existArticle) { // 그냥 existArticle을 넣으면 불린값으로 참거짓 판별, 값이 있으면 1이니 true, 없으면 0이니 false
         await Comment.updateOne({ _id: _commentId }, { $set: { content } });
@@ -74,7 +74,7 @@ router.delete("/:_commentId", async (req, res) => {
     const { _commentId } = req.params; // req.params._postId의 구조분해할당
     const { password } = req.body; // req.body.password의 구조분해할당
   
-    const existArticle = await Comment.findOne({ _id: _commentId, password }); // 스키마에서 패스워드를 스트링으로 받았으면 여기도 스트링, 패스워드 구조분해할당
+    // const existArticle = await Comment.findOne({ _id: _commentId, password }); // 스키마에서 패스워드를 스트링으로 받았으면 여기도 스트링, 패스워드 구조분해할당
 
     if (existArticle) { 
         await Comment.deleteOne({ _commentId });
