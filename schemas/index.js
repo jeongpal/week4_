@@ -10,9 +10,9 @@
 //   mongoose.connection.on("error", err => {
 //     console.error("몽고디비 연결 에러", err);
 //   });
-  
+require("dotenv").config();
   const mongoose = require("mongoose");
-  require("dotenv").config();
+  // require("dotenv").config();
   // const DB_URL = process.env.DB_URL
   
   const connect = () => {

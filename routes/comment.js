@@ -16,7 +16,7 @@ router.post("/:_postId", async (req, res) => {
     res.json({ 
         msg : "댓글을 생성하였습니다." 
     });
-        res.status(201).send({'message': "댓글작성success"})
+
     }
     catch(error){
         console.log(error)
@@ -29,12 +29,20 @@ router.post("/:_postId", async (req, res) => {
 router.get("/:_postId", async (req, res) => { 
     try{ 
     const { _postId } = req.params; // const _postId = req.params._postId를 구조분해할당한 형태
-    const detail = await Comment.find({ _postId }) //앞이 디비의 키값, 구조분해할당
+    const comment = await Comment.find({ _postId }) //앞이 디비의 키값, 구조분해할당
     
+    const commentResult = comment.map((item)=> { // 를 제외한 데이터를 내보내는 로직
+        return {
+        commentId: item._id,
+        user: item.user,
+        content: item.content,
+        createdAt: item.createdAt}
+        });
+        
     res.json({
-        detail,
+        commentResult,
     });
-        res.status(200).send({'message': "댓글목록조회success"})
+
     }
     catch(error){
         console.log(error)
@@ -49,9 +57,9 @@ router.put("/:_commentId", async (req, res) => {
     const { _commentId } = req.params; // 위의 주소와 일치시키는게 좋음.
     const { password, content } = req.body;   
     
-    // const existArticle = await Comment.findOne({ _id: _commentId, password }); // 수정은 글 하나를 골라서 하는거니까 findOne() 로직 지헌님꺼 참고
+    const existArticle = await Comment.findOne({ _id: _commentId}); // 수정은 글 하나를 골라서 하는거니까 findOne() 로직 지헌님꺼 참고
 
-    if (existArticle) { // 그냥 existArticle을 넣으면 불린값으로 참거짓 판별, 값이 있으면 1이니 true, 없으면 0이니 false
+    if (existArticle.password == password) { // existArticle에서 불러온 데이터안의 패스워드와 바디의 패스워드가 일치하는지
         await Comment.updateOne({ _id: _commentId }, { $set: { content } });
     } else {
         return res.status(400).json({ 
@@ -62,7 +70,7 @@ router.put("/:_commentId", async (req, res) => {
     res.json({ 
         success: true, msg: "댓글을 수정하였습니다." 
     });
-        res.status(201).send({'message': "댓글수정success"})
+
     }
     catch(error){
         console.log(error)
@@ -77,9 +85,9 @@ router.delete("/:_commentId", async (req, res) => {
     const { _commentId } = req.params; // req.params._postId의 구조분해할당
     const { password } = req.body; // req.body.password의 구조분해할당
   
-    // const existArticle = await Comment.findOne({ _id: _commentId, password }); // 스키마에서 패스워드를 스트링으로 받았으면 여기도 스트링, 패스워드 구조분해할당
+    const existArticle = await Comment.findOne({ _id: _commentId }); // 스키마에서 패스워드를 스트링으로 받았으면 여기도 스트링
 
-    if (existArticle) { 
+    if (existArticle.password == password) { 
         await Comment.deleteOne({ _commentId });
     } else {
         return res.status(400).json({ 
@@ -90,7 +98,7 @@ router.delete("/:_commentId", async (req, res) => {
     res.json({ 
         success: true, msg: "댓글을 삭제하였습니다." 
     });
-        res.status(200).send({'message': "댓글삭제success"})
+
     }
     catch(error){
         console.log(error)
