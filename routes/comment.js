@@ -16,6 +16,7 @@ router.post("/:_postId", async (req, res) => {
     res.json({ 
         msg : "댓글을 생성하였습니다." 
     });
+        res.status(201).send({'message': "댓글작성success"})
     }
     catch(error){
         console.log(error)
@@ -33,6 +34,7 @@ router.get("/:_postId", async (req, res) => {
     res.json({
         detail,
     });
+        res.status(200).send({'message': "댓글목록조회success"})
     }
     catch(error){
         console.log(error)
@@ -60,6 +62,7 @@ router.put("/:_commentId", async (req, res) => {
     res.json({ 
         success: true, msg: "댓글을 수정하였습니다." 
     });
+        res.status(201).send({'message': "댓글수정success"})
     }
     catch(error){
         console.log(error)
@@ -87,6 +90,7 @@ router.delete("/:_commentId", async (req, res) => {
     res.json({ 
         success: true, msg: "댓글을 삭제하였습니다." 
     });
+        res.status(200).send({'message': "댓글삭제success"})
     }
     catch(error){
         console.log(error)

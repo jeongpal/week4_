@@ -15,6 +15,7 @@ router.post("/", async (req, res) => {
         res.json({ 
             msg : "게시글을 생성하였습니다." 
         });
+        res.status(201).send({'message': "게시글작성success"})
     }
     catch(error){
         console.log(error)
@@ -27,10 +28,11 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {  
     try { 
     const post = await  Post.find().sort("-createdAt");
-    
+    // 여기 비밀번호 제외한 데이터를 내보내는 로직. for or map
     res.json({
         post,
     });
+        res.status(200).send({'message': "게시글조회success"})
     }
     catch(error){
         console.log(error)
@@ -50,7 +52,9 @@ router.get("/:_postId", async (req, res) => {
     res.json({
         detail,
     });
-    }catch(error){
+        res.status(200).send({'message': "게시글상세조회success"})
+    }
+    catch(error){
         console.log(error)
         res.status(400).send({'message': "상세조회실패error"})
         }
@@ -76,6 +80,7 @@ router.put("/:_postId", async (req, res) => {
     res.json({ 
         success: true, msg: "게시글을 수정하였습니다." 
     });
+        res.status(200).send({'message': "게시글수정success"})
     }
     catch(error){
         console.log(error)
@@ -102,6 +107,7 @@ router.delete("/:_postId", async (req, res) => {
     res.json({ 
         success: true, msg: "게시글을 삭제하였습니다." 
     });
+        res.status(200).send({'message': "게시글삭제success"})
     }
     catch(error){
         console.log(error)

@@ -13,10 +13,10 @@
   
   const mongoose = require("mongoose");
   require("dotenv").config();
-  const DB_URL = process.env.DB_URL
+  // const DB_URL = process.env.DB_URL
   
   const connect = () => {
-  mongoose.connect(DB_URL, { ignoreUndefined: true }).catch((err) => {
+  mongoose.connect(process.env.DB_URL, { ignoreUndefined: true }).catch((err) => {
   console.error(err);
   });
   };
