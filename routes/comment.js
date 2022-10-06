@@ -31,7 +31,7 @@ router.get("/:_postId", async (req, res) => {
     const { _postId } = req.params; // const _postId = req.params._postId를 구조분해할당한 형태
     const comment = await Comment.find({ _postId }) //앞이 디비의 키값, 구조분해할당
     
-    const commentResult = comment.map((item)=> { // 를 제외한 데이터를 내보내는 로직
+    const data = comment.map((item)=> { // 를 제외한 데이터를 내보내는 로직
         return {
         commentId: item._id,
         user: item.user,
@@ -40,7 +40,7 @@ router.get("/:_postId", async (req, res) => {
         });
         
     res.json({
-        commentResult,
+        data,
     });
 
     }

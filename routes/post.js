@@ -29,7 +29,7 @@ router.get("/", async (req, res) => {
     try { 
     const post = await  Post.find().sort("-createdAt");
     
-    const postResult = post.map((item)=> { // _id, password, _v를 제외한 데이터를 내보내는 로직
+    const data = post.map((item)=> { // _id, password, _v를 제외한 데이터를 내보내는 로직
         return {
         postId: item._id,
         user: item.user,
@@ -39,7 +39,7 @@ router.get("/", async (req, res) => {
         });
     
     res.json({
-        postResult,
+        data,
     });
 
     }
@@ -58,7 +58,7 @@ router.get("/:_postId", async (req, res) => {
     const { _postId } = req.params; // const _postId = req.params._postId를 구조분해할당한 형태
 
     const detail = await Post.findOne({ _id: _postId }) //앞이 디비의 키값
-    const post = { // findOne이라서 하나만 반환되니 배열 순회가 필요없다. 그래서 위랑 다르게 map 메소드를 쓰지 않는다.
+    const data = { // findOne이라서 하나만 반환되니 배열 순회가 필요없다. 그래서 위랑 다르게 map 메소드를 쓰지 않는다.
             postId: detail._id,
             user: detail.user,
             title: detail.title,
@@ -66,7 +66,7 @@ router.get("/:_postId", async (req, res) => {
             createdAt: detail.createdAt
     }
     res.json({
-        post,
+        data,
     });
     }
     catch(error){
