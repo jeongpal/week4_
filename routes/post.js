@@ -1,73 +1,56 @@
 const express = require("express");
-const { title } = require("process");
+const authMiddleware = require("../middlewares/auth-middleware");
 const router = express.Router();
-const Post = require("../schemas/post");
-
+const { Post } = require("../models");
 
 //게시글 작성
-router.post("/", async (req, res) => {
-    try { 
-        let createdAt = new Date();
+router.post('/',authMiddleware,async (req, res) => { //post누르면 정보가 담겨있음 
+    // try{
+    const { user } = res.locals;
+    const { title, content, } = req.body; //저장해야할 정보를 받아와서 변수에 등록시킨다. req.body에 정보가 들어있음
+    const createdAt = new Date(); //날짜 지정 yyyddmmm이거 쓰기 나중에 하자!!
+    const updatedAt = new Date();
 
-        const { user, title, password, content } = req.body;
+    await Post.create({
+        userId : user.userId,
+        nickname : user.nickname,
+        title,
+        content,
+        createdAt,
+        updatedAt,
+        likes : 0,
+    }); //스키마.db에 정보를 만들어준다 //앞에는 키값 : 벨류값 중복되는 이름일시 객체구조분해 활용
 
-        await Post.create({ user, title, password, content, createdAt });
-
-        res.json({ 
-            msg : "게시글을 생성하였습니다." 
-        });
-    }
-    catch(error){
-        console.log(error)
-        res.status(400).send({'message': "작성실패error"})
-    }
-});
-
-
-// 게시글 조회
-router.get("/", async (req, res) => {  
-    try { 
-    const post = await  Post.find().sort("-createdAt");
-    
-    const data = post.map((item)=> { // _id, password, _v를 제외한 데이터를 내보내는 로직
-        return {
-        postId: item._id,
-        user: item.user,
-        title: item.title,
-        content: item.content,
-        createdAt: item.createdAt}
-        });
-    
-    res.json({
-        data,
+    res.status(201).send({'message': "게시글을 생성하였습니다."}); //스키마 Post 아이디로 정보를 저장하고 만들어줌
+    // }catch(error){ //catch가 에러를 받는다.
+    // console.log(error)
+    // res.status(400).send({'message': "작성실패error"}) //에러 400 try catch try문 안에 에러가 나면 catch가 잡아줘서 에러문구를 보내준다.(서버가 꺼지지 않음)
+    // }
     });
 
-    }
-    catch(error){
-        console.log(error)
-        res.status(400).send({message: "조회실패error"}) 
-    }
+// 게시글 조회(로그인 검사 제외)
+router.get("/", async (req, res, next) => {
+    try{
+      const posts = await Post.findAll({attributes:{ exclude:["content"]}, order : [["createdAt", "DESC"]], })
+      res.json({
+        posts,
+    })
+  }
+    catch(error){ // catch가 에러를 받는다.
+      console.log(error)
+    res.status(400).send({'message': "게시글 작성하기 error"})}
 });
 
 
-// 게시글 상세 조회
-router.get("/:_postId", async (req, res) => { 
+// 게시글 상세 조회(로그인 검사 제외)
+router.get("/:postId", async (req, res) => { 
     try {
     // const { _id } = req.params;
     // const [detail] = await Post.find({ _postId: _id }) find로 불러오면 배열로 반환되니 변수에 대괄호를 칠 필요가 없음.
-    const { _postId } = req.params; // const _postId = req.params._postId를 구조분해할당한 형태
+    const { postId } = req.params; // const _postId = req.params._postId를 구조분해할당한 형태
 
-    const detail = await Post.findOne({ _id: _postId }) //앞이 디비의 키값
-    const data = { // findOne이라서 하나만 반환되니 배열 순회가 필요없다. 그래서 위랑 다르게 map 메소드를 쓰지 않는다.
-            postId: detail._id,
-            user: detail.user,
-            title: detail.title,
-            content: detail.content,
-            createdAt: detail.createdAt
-    }
-    res.json({
-        data,
-    });
+    const post = await Post.findOne({ where:{ postId } }) //앞이 디비의 키값
+    res.json({ post:post });
     }
     catch(error){
         console.log(error)
@@ -77,20 +60,12 @@ router.get("/:_postId", async (req, res) => {
 });
 
 // 게시글 수정
-router.put("/:_postId", async (req, res) => { 
+router.put("/:postId", authMiddleware, async (req, res) => { 
     try{
-    const { _postId } = req.params; // 위의 주소와 일치시키는게 좋음.
-    const { user, title, password, content } = req.body;   
+    const { postId } = req.params; // 위의 주소와 일치시키는게 좋음.
+    const { title, content } = req.body;   
     
-    const existArticle = await Post.findOne({ _id: _postId, password }); // 수정은 글 하나를 골라서 하는거니까 findOne()
-
-    if (existArticle.password == password) { // 그냥 existArticle을 넣으면 불린값으로 참거짓 판별, 값이 있으면 1이니 true, 없으면 0이니 false
-        await Post.updateOne({ _id: _postId }, { $set: { title, content } });
-    } else {
-        return res.status(400).json({ 
-            success: false, msg: "비밀번호가 일치하지 않습니다!" 
-        });
-    }
+    const existArticle = await Post.update({ title, content },{ where: { postId } }); // 수정은 글 하나를 골라서 하는거니까 findOne()
 
     res.json({ 
         success: true, msg: "게시글을 수정하였습니다." 
@@ -104,23 +79,14 @@ router.put("/:_postId", async (req, res) => {
 });
 
 // 게시글 삭제
-router.delete("/:_postId", async (req, res) => {
+router.delete("/:postId", authMiddleware, async (req, res) => {
     try{
-    const { _postId } = req.params; // req.params._postId의 구조분해할당
-    const { password } = req.body; // req.body.password의 구조분해할당
+    const { postId } = req.params; // req.params._postId의 구조분해할당
   
-    const existArticle = await Post.findOne({ _id: _postId }); // 스키마에서 패스워드를 스트링으로 받았으면 여기도 스트링
+    const existArticle = await Post.destroy({ where: { postId} }); // 스키마에서 패스워드를 스트링으로 받았으면 여기도 스트링
 
-    if (existArticle.password == password) { 
-        await Post.deleteOne({ _postId });
-    } else {
-        return res.status(400).json({ 
-            success: false, msg: "비밀번호가 일치하지 않습니다!" 
-        });
-    }
-    
     res.json({ 
-        success: true, msg: "게시글을 삭제하였습니다." 
+        msg: "게시글을 삭제하였습니다." 
     });
 
     }
